@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Food Delivery System{% endblock %}</title>
+  <meta name="description" content="Food Delivery System — DBMS College Project by Aditi">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-icon">🍔</div>
+    <h1>QuickBite</h1>
+    <span>Food Delivery System</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <p class="nav-section-label">Overview</p>
+    <a href="{{ url_for('index') }}"
+       class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+      <span class="nav-icon">📊</span> Dashboard
+    </a>
+
+    <p class="nav-section-label">Management</p>
+    <a href="{{ url_for('customers') }}"
+       class="nav-link {% if 'customer' in request.endpoint %}active{% endif %}">
+      <span class="nav-icon">👥</span> Customers
+    </a>
+    <a href="{{ url_for('restaurants') }}"
+       class="nav-link {% if 'restaurant' in request.endpoint or 'menu' in request.endpoint %}active{% endif %}">
+      <span class="nav-icon">🏪</span> Restaurants & Menu
+    </a>
+    <a href="{{ url_for('delivery') }}"
+       class="nav-link {% if 'delivery' in request.endpoint %}active{% endif %}">
+      <span class="nav-icon">🛵</span> Delivery Team
+    </a>
+
+    <p class="nav-section-label">Orders</p>
+    <a href="{{ url_for('place_order') }}"
+       class="nav-link {% if request.endpoint == 'place_order' %}active{% endif %}">
+      <span class="nav-icon">➕</span> Place Order
+    </a>
+    <a href="{{ url_for('orders') }}"
+       class="nav-link {% if request.endpoint == 'orders' %}active{% endif %}">
+      <span class="nav-icon">📦</span> All Orders
+    </a>
+
+    <p class="nav-section-label">Analytics</p>
+    <a href="{{ url_for('reports') }}"
+       class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}">
+      <span class="nav-icon">📈</span> Reports
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    DBMS Project · 2026<br>QuickBite v1.0
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title">{% block topbar_title %}Dashboard{% endblock %}</div>
+    <span class="topbar-badge">🎓 DBMS Project</span>
+  </div>
+
+  <div class="page-content">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">
+              {% if category == 'success' %}✅{% else %}⚠️{% endif %} {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<script>
+// Auto‑dismiss flash messages after 4 s
+setTimeout(() => {
+  document.querySelectorAll('.flash').forEach(el => {
+    el.style.transition = 'opacity 0.5s ease';
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 500);
+  });
+}, 4000);
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

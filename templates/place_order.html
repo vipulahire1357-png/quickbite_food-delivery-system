@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Place Order — QuickBite{% endblock %}
+{% block topbar_title %}🛒 Place New Order{% endblock %}
+
+{% block content %}
+<form method="POST" action="{{ url_for('place_order') }}" id="order-form">
+
+  <!-- Step 1: Customer -->
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-header">
+      <div class="card-title">Step 1 — Select Customer</div>
+    </div>
+    <div style="max-width:480px;">
+      <div class="form-group">
+        <label class="form-label" for="customer-sel">Customer</label>
+        <select class="form-select" id="customer-sel" name="customer_id" required>
+          <option value="">— Choose a customer —</option>
+          {% for c in customers %}
+          <option value="{{ c.id }}">{{ c.name }} · {{ c.phone }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <p style="font-size:12px;color:var(--text-3);">
+        Can't find the customer?
+        <a href="{{ url_for('customers') }}" style="color:var(--accent);">Add them first →</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Step 2: Menu Items -->
+  <div class="card" style="margin-bottom:80px;">
+    <div class="card-header">
+      <div class="card-title">Step 2 — Choose Menu Items</div>
+      <div style="font-size:13px;color:var(--text-2);">Tick an item, then set quantity</div>
+    </div>
+
+    {% set current_rest = namespace(id=-1, name='') %}
+    {% for item in menu_items %}
+      {% if item.restaurant_id != current_rest.id %}
+        {% if current_rest.id != -1 %}</div></div>{% endif %}
+        {% set current_rest.id = item.restaurant_id %}
+        {% set current_rest.name = item.restaurant_name %}
+        <div class="restaurant-section">
+          <h3>🍴 {{ item.restaurant_name }}</h3>
+          <div class="menu-grid" id="rest-{{ item.restaurant_id }}">
+      {% endif %}
+
+      <div class="menu-item-card" id="card-{{ item.id }}">
+        <input type="checkbox" id="chk-{{ item.id }}"
+               name="menu_id" value="{{ item.id }}"
+               onchange="toggleItem({{ item.id }}, {{ item.price }})">
+        <label for="chk-{{ item.id }}">
+          <span class="item-name">{{ item.item_name }}</span>
+          <span class="item-price">₹{{ "%.2f"|format(item.price) }}</span>
+        </label>
+        <input type="number" class="qty-input" id="qty-{{ item.id }}"
+               name="quantity" value="1" min="1" max="20"
+               data-price="{{ item.price }}"
+               onchange="updateTotal()"
+               disabled>
+      </div>
+
+    {% endfor %}
+    {% if menu_items %}</div></div>{% endif %}
+  </div>
+
+  <!-- Sticky Summary Bar -->
+  <div class="order-summary-bar">
+    <div class="total-display">
+      Order Total: <span id="total-display">₹0.00</span>
+    </div>
+    <div style="font-size:13px;color:var(--text-2);" id="item-count-display">0 items selected</div>
+    <button type="submit" class="btn btn-primary" id="place-btn" disabled>
+      🛒 Confirm Order
+    </button>
+  </div>
+
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let selectedItems = {};
+
+  function toggleItem(id, price) {
+    const chk  = document.getElementById('chk-' + id);
+    const qty  = document.getElementById('qty-' + id);
+    const card = document.getElementById('card-' + id);
+
+    if (chk.checked) {
+      qty.disabled = false;
+      qty.focus();
+      card.classList.add('selected');
+      selectedItems[id] = { price, qty: parseInt(qty.value) };
+    } else {
+      qty.disabled = true;
+      card.classList.remove('selected');
+      delete selectedItems[id];
+    }
+    updateTotal();
+  }
+
+  function updateTotal() {
+    // Sync qty values
+    document.querySelectorAll('.qty-input:not(:disabled)').forEach(inp => {
+      const id = inp.id.replace('qty-', '');
+      if (selectedItems[id]) {
+        selectedItems[id].qty = parseInt(inp.value) || 1;
+      }
+    });
+
+    let total = 0;
+    let count = 0;
+    for (const [id, data] of Object.entries(selectedItems)) {
+      total += data.price * data.qty;
+      count += data.qty;
+    }
+
+    document.getElementById('total-display').textContent = '₹' + total.toFixed(2);
+    document.getElementById('item-count-display').textContent =
+      Object.keys(selectedItems).length + ' item type(s) · ' + count + ' qty';
+    document.getElementById('place-btn').disabled = (Object.keys(selectedItems).length === 0);
+  }
+</script>
+{% endblock %}

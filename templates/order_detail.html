@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ order.id }} — QuickBite{% endblock %}
+{% block topbar_title %}🧾 Order Detail{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+  <a href="{{ url_for('index') }}">Dashboard</a>
+  <span class="sep">›</span>
+  <a href="{{ url_for('orders') }}">Orders</a>
+  <span class="sep">›</span>
+  <span>Order #{{ order.id }}</span>
+</div>
+
+<div class="grid-2">
+
+  <!-- Order Info -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📋 Order #{{ order.id }}</div>
+      {% if order.status == 'Pending' %}
+        <span class="badge badge-pending">⏳ Pending</span>
+      {% elif order.status == 'Out for Delivery' %}
+        <span class="badge badge-out">🛵 Out for Delivery</span>
+      {% else %}
+        <span class="badge badge-delivered">✅ Delivered</span>
+      {% endif %}
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:8px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;">Customer</div>
+      <div style="font-weight:700;font-size:16px;">{{ order.customer_name }}</div>
+      <div style="color:var(--text-2);font-size:13px;margin-top:2px;">📞 {{ order.customer_phone }}</div>
+      <div style="color:var(--text-2);font-size:13px;margin-top:2px;">📍 {{ order.customer_address }}</div>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:8px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;">Delivery</div>
+      <div style="font-weight:600;">{{ order.delivery_name }}</div>
+      {% if order.delivery_phone != '—' %}
+      <div style="color:var(--text-2);font-size:13px;margin-top:2px;">📞 {{ order.delivery_phone }}</div>
+      {% endif %}
+    </div>
+
+    <div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:8px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;">Order Date</div>
+      <div style="color:var(--text-2);font-size:14px;">{{ order.order_date }}</div>
+    </div>
+  </div>
+
+  <!-- Bill Summary -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🧾 Bill Summary</div>
+    </div>
+
+    {% if items %}
+    <div class="table-wrap" style="margin-bottom:16px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Restaurant</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td style="font-weight:600;">{{ item.item_name }}</td>
+            <td style="color:var(--text-2);font-size:13px;">{{ item.restaurant }}</td>
+            <td style="text-align:center;">{{ item.quantity }}</td>
+            <td>₹{{ "%.2f"|format(item.price) }}</td>
+            <td style="font-weight:700;color:var(--accent);">₹{{ "%.2f"|format(item.subtotal) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Total Row -->
+    <div style="border-top:2px solid var(--border);padding-top:16px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:15px;font-weight:600;color:var(--text-2);">Grand Total</div>
+      <div style="font-family:'Outfit',sans-serif;font-size:26px;font-weight:800;color:var(--accent);">
+        ₹{{ "%.2f"|format(order.total_amount) }}
+      </div>
+    </div>
+    {% else %}
+    <div class="empty">
+      <div class="empty-icon">🍽️</div>
+      <p>No items found for this order.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Back Button -->
+<div style="margin-top:20px;">
+  <a href="{{ url_for('orders') }}" class="btn btn-secondary">← Back to Orders</a>
+</div>
+
+{% endblock %}

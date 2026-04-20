@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Delivery Team — QuickBite{% endblock %}
+{% block topbar_title %}🛵 Delivery Team{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+
+  <!-- Add Delivery Person -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">➕ Add Delivery Person</div>
+    </div>
+    <form method="POST" action="{{ url_for('add_delivery_person') }}">
+      <div class="form-group">
+        <label class="form-label" for="dp-name">Full Name</label>
+        <input class="form-control" type="text" id="dp-name" name="name"
+               placeholder="e.g. Anil Kumar" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="dp-phone">Phone Number</label>
+        <input class="form-control" type="tel" id="dp-phone" name="phone"
+               placeholder="e.g. 8800112233" pattern="[0-9]{10}" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">
+        🛵 Add to Team
+      </button>
+    </form>
+  </div>
+
+  <!-- Info Box -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">ℹ️ About Delivery Tracking</div>
+    </div>
+    <div style="color:var(--text-2);font-size:14px;line-height:1.8;">
+      <p>Each <strong style="color:var(--text);">order</strong> can be assigned one delivery person.</p>
+      <br>
+      <p>Delivery status is updated from the <a href="{{ url_for('orders') }}" style="color:var(--accent);">Orders page</a> using the ✏️ Update button.</p>
+      <br>
+      <p>Status flow:</p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+        <span class="badge badge-pending" style="width:fit-content;">⏳ Pending → Order placed, not yet picked up</span>
+        <span class="badge badge-out" style="width:fit-content;">🛵 Out for Delivery → Rider picked up</span>
+        <span class="badge badge-delivered" style="width:fit-content;">✅ Delivered → Customer received</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<br>
+
+<!-- Delivery Team Table -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">👷 Delivery Team
+      <span style="font-size:13px;font-weight:400;color:var(--text-2);">({{ persons|length }} members)</span>
+    </div>
+  </div>
+  {% if persons %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Deliveries Handled</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in persons %}
+        <tr>
+          <td style="color:var(--text-3);font-size:12px;font-weight:600;">#{{ p.id }}</td>
+          <td style="font-weight:600;">
+            <span style="display:inline-block;width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-3));display:inline-flex;align-items:center;justify-content:center;font-size:14px;margin-right:8px;vertical-align:middle;">
+              {{ p.name[0] }}
+            </span>
+            {{ p.name }}
+          </td>
+          <td><span style="font-family:monospace;color:var(--text-2);">{{ p.phone }}</span></td>
+          <td>
+            {% if p.deliveries > 0 %}
+              <span class="badge badge-delivered">{{ p.deliveries }} delivery{% if p.deliveries > 1 %}s{% endif %}</span>
+            {% else %}
+              <span class="badge" style="background:rgba(255,255,255,0.05);color:var(--text-3);border:1px solid var(--border);">No deliveries yet</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">
+    <div class="empty-icon">🛵</div>
+    <p>No delivery staff added yet.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

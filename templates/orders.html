@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}All Orders — QuickBite{% endblock %}
+{% block topbar_title %}📦 All Orders{% endblock %}
+
+{% block content %}
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+  <a href="{{ url_for('orders') }}"
+     class="filter-btn {% if not status_filter %}active{% endif %}">All Orders</a>
+  <a href="{{ url_for('orders', status='Pending') }}"
+     class="filter-btn {% if status_filter == 'Pending' %}active{% endif %}">⏳ Pending</a>
+  <a href="{{ url_for('orders', status='Out for Delivery') }}"
+     class="filter-btn {% if status_filter == 'Out for Delivery' %}active{% endif %}">🛵 Out for Delivery</a>
+  <a href="{{ url_for('orders', status='Delivered') }}"
+     class="filter-btn {% if status_filter == 'Delivered' %}active{% endif %}">✅ Delivered</a>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">
+      📋 Orders
+      <span style="font-size:13px;font-weight:400;color:var(--text-2);">
+        ({{ orders|length }} result{{ 's' if orders|length != 1 }})
+      </span>
+    </div>
+    <a href="{{ url_for('place_order') }}" class="btn btn-primary btn-sm">➕ New Order</a>
+  </div>
+
+  {% if orders %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Customer</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Delivery Person</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td>
+            <a href="{{ url_for('order_detail', order_id=o.id) }}"
+               style="color:var(--accent);font-weight:700;text-decoration:none;">#{{ o.id }}</a>
+          </td>
+          <td style="font-weight:500;">{{ o.customer }}</td>
+          <td style="font-weight:700;color:var(--text);">₹{{ "%.2f"|format(o.total_amount) }}</td>
+          <td>
+            {% if o.status == 'Pending' %}
+              <span class="badge badge-pending">⏳ Pending</span>
+            {% elif o.status == 'Out for Delivery' %}
+              <span class="badge badge-out">🛵 Out for Delivery</span>
+            {% else %}
+              <span class="badge badge-delivered">✅ Delivered</span>
+            {% endif %}
+          </td>
+          <td style="color:var(--text-2);">{{ o.delivery_person }}</td>
+          <td style="color:var(--text-3);font-size:12px;">{{ o.order_date[:16] }}</td>
+          <td>
+            <button class="btn btn-secondary btn-sm"
+                    onclick="openUpdateModal({{ o.id }}, '{{ o.status }}', '{{ o.delivery_person }}')"
+                    id="update-btn-{{ o.id }}">
+              ✏️ Update
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">
+    <div class="empty-icon">📭</div>
+    <p>No orders {% if status_filter %}with status "<strong>{{ status_filter }}</strong>"{% else %}yet{% endif %}.</p>
+    {% if not status_filter %}
+    <br>
+    <a href="{{ url_for('place_order') }}" class="btn btn-primary" style="margin-top:8px;">Place First Order</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Update Modal Overlay -->
+<div id="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;width:420px;max-width:90vw;box-shadow:var(--shadow-lg);">
+    <div style="font-family:'Outfit',sans-serif;font-size:19px;font-weight:700;margin-bottom:20px;">
+      ✏️ Update Order <span id="modal-order-id" style="color:var(--accent);"></span>
+    </div>
+    <form method="POST" id="update-form">
+      <div class="form-group">
+        <label class="form-label">Delivery Status</label>
+        <select class="form-select" name="status" id="modal-status">
+          <option value="Pending">⏳ Pending</option>
+          <option value="Out for Delivery">🛵 Out for Delivery</option>
+          <option value="Delivered">✅ Delivered</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Assign Delivery Person</label>
+        <select class="form-select" name="delivery_person_id" id="modal-dp">
+          <option value="">— Not Assigned —</option>
+          {% for dp in delivery_persons %}
+          <option value="{{ dp.id }}">{{ dp.name }} · {{ dp.phone }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">Save Changes</button>
+        <button type="button" class="btn btn-secondary" onclick="closeModal()" style="flex:1;">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function openUpdateModal(orderId, currentStatus, currentDP) {
+    document.getElementById('modal-order-id').textContent = '#' + orderId;
+    document.getElementById('update-form').action = '/orders/' + orderId + '/update';
+    document.getElementById('modal-status').value = currentStatus;
+    document.getElementById('modal-overlay').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').style.display = 'none';
+  }
+
+  document.getElementById('modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+</script>
+{% endblock %}

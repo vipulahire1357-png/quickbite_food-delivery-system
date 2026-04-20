@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Customers — QuickBite{% endblock %}
+{% block topbar_title %}👥 Customers{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+
+  <!-- Add Customer Form -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">➕ Add New Customer</div>
+    </div>
+    <form method="POST" action="{{ url_for('add_customer') }}" id="add-customer-form">
+      <div class="form-group">
+        <label class="form-label" for="cust-name">Full Name</label>
+        <input class="form-control" type="text" id="cust-name" name="name"
+               placeholder="e.g. Ananya Sharma" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="cust-phone">Phone Number</label>
+        <input class="form-control" type="tel" id="cust-phone" name="phone"
+               placeholder="e.g. 9876543210" pattern="[0-9]{10}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="cust-addr">Delivery Address</label>
+        <textarea class="form-control" id="cust-addr" name="address" rows="3"
+                  placeholder="Full delivery address..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">
+        ✅ Add Customer
+      </button>
+    </form>
+  </div>
+
+  <!-- Customer Info Box -->
+  <div class="card" style="display:flex;flex-direction:column;gap:16px;">
+    <div class="card-header" style="margin-bottom:0;">
+      <div class="card-title">ℹ️ Customer Info</div>
+    </div>
+    <div style="color:var(--text-2);font-size:14px;line-height:1.7;">
+      <p>Customers are linked to orders via <code style="background:var(--bg-input);padding:1px 6px;border-radius:4px;">customer_id</code> (Foreign Key).</p>
+      <br>
+      <p>Each customer can place multiple orders. The order count below reflects the live JOIN query on the database.</p>
+    </div>
+    <div style="margin-top:auto;">
+      <div style="background:var(--bg-input);border-radius:var(--radius-sm);padding:14px;font-size:13px;color:var(--text-2);">
+        <strong style="color:var(--accent);">SQL Used:</strong><br><br>
+        <code style="color:var(--text);">
+          SELECT c.*, COUNT(o.id) AS order_count<br>
+          FROM Customers c<br>
+          LEFT JOIN Orders o ON c.id = o.customer_id<br>
+          GROUP BY c.id
+        </code>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<br>
+
+<!-- Customers Table -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">📋 All Customers
+      <span style="font-size:13px;font-weight:400;color:var(--text-2);">({{ customers|length }} records)</span>
+    </div>
+  </div>
+  {% if customers %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Address</th>
+          <th>Orders Placed</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in customers %}
+        <tr>
+          <td style="color:var(--text-3);font-size:12px;font-weight:600;">#{{ c.id }}</td>
+          <td>
+            <div style="font-weight:600;">{{ c.name }}</div>
+          </td>
+          <td>
+            <span style="font-family:monospace;color:var(--text-2);">{{ c.phone }}</span>
+          </td>
+          <td style="color:var(--text-2);max-width:250px;">{{ c.address }}</td>
+          <td>
+            {% if c.order_count > 0 %}
+              <span class="badge badge-delivered">{{ c.order_count }} order{{ 's' if c.order_count > 1 }}</span>
+            {% else %}
+              <span class="badge" style="background:rgba(255,255,255,0.05);color:var(--text-3);border:1px solid var(--border);">No orders</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">
+    <div class="empty-icon">👤</div>
+    <p>No customers yet. Add the first one using the form above!</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — QuickBite{% endblock %}
+{% block topbar_title %}📊 Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stats Row 1 -->
+<div class="stats-grid">
+  <div class="stat-card stat-orange">
+    <div class="stat-icon">📦</div>
+    <div class="stat-value">{{ stats.total_orders }}</div>
+    <div class="stat-label">Total Orders</div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon">💰</div>
+    <div class="stat-value">₹{{ "%.0f"|format(stats.total_revenue) }}</div>
+    <div class="stat-label">Total Revenue</div>
+  </div>
+  <div class="stat-card stat-blue">
+    <div class="stat-icon">👥</div>
+    <div class="stat-value">{{ stats.total_customers }}</div>
+    <div class="stat-label">Customers</div>
+  </div>
+  <div class="stat-card stat-purple">
+    <div class="stat-icon">🏪</div>
+    <div class="stat-value">{{ stats.total_restaurants }}</div>
+    <div class="stat-label">Restaurants</div>
+  </div>
+</div>
+
+<!-- Order Status Row -->
+<div class="stats-grid" style="grid-template-columns: repeat(3,1fr); margin-bottom:32px;">
+  <div class="stat-card stat-yellow">
+    <div class="stat-icon">⏳</div>
+    <div class="stat-value">{{ stats.pending }}</div>
+    <div class="stat-label">Pending Orders</div>
+  </div>
+  <div class="stat-card stat-blue">
+    <div class="stat-icon">🛵</div>
+    <div class="stat-value">{{ stats.out }}</div>
+    <div class="stat-label">Out for Delivery</div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon">✅</div>
+    <div class="stat-value">{{ stats.delivered }}</div>
+    <div class="stat-label">Delivered</div>
+  </div>
+</div>
+
+<!-- Quick Actions + Recent Orders -->
+<div class="grid-2">
+
+  <!-- Quick Actions -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">⚡ Quick Actions</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <a href="{{ url_for('place_order') }}" class="btn btn-primary" style="justify-content:center;">
+        🛒 Place New Order
+      </a>
+      <a href="{{ url_for('customers') }}" class="btn btn-secondary" style="justify-content:center;">
+        👤 Add Customer
+      </a>
+      <a href="{{ url_for('restaurants') }}" class="btn btn-secondary" style="justify-content:center;">
+        🏪 Manage Restaurants
+      </a>
+      <a href="{{ url_for('orders') }}" class="btn btn-secondary" style="justify-content:center;">
+        📋 View All Orders
+      </a>
+      <a href="{{ url_for('reports') }}" class="btn btn-secondary" style="justify-content:center;">
+        📈 View Reports
+      </a>
+    </div>
+  </div>
+
+  <!-- Recent Orders -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🕐 Recent Orders</div>
+      <a href="{{ url_for('orders') }}" class="btn btn-secondary btn-sm">View All</a>
+    </div>
+    {% if recent_orders %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in recent_orders %}
+          <tr>
+            <td><a href="{{ url_for('order_detail', order_id=o.id) }}" style="color:var(--accent);text-decoration:none;font-weight:600;">#{{ o.id }}</a></td>
+            <td>{{ o.customer }}</td>
+            <td style="font-weight:600;">₹{{ "%.2f"|format(o.total_amount) }}</td>
+            <td>
+              {% if o.status == 'Pending' %}
+                <span class="badge badge-pending">⏳ {{ o.status }}</span>
+              {% elif o.status == 'Out for Delivery' %}
+                <span class="badge badge-out">🛵 {{ o.status }}</span>
+              {% else %}
+                <span class="badge badge-delivered">✅ {{ o.status }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty">
+      <div class="empty-icon">📭</div>
+      <p>No orders yet. <a href="{{ url_for('place_order') }}" style="color:var(--accent);">Place the first one!</a></p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
