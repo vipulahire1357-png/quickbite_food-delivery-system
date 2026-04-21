@@ -253,7 +253,7 @@ The database is automatically seeded with:
 
 ---
 
-## 👩‍💻 Author
+## 👩‍💻 Author : Vipul Ahire
 
 **Aditi** | DBMS Project — 2026  
 Built with Python (Flask) + SQLite
